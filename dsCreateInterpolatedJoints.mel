@@ -1,0 +1,39 @@
+global proc dsCreateInterpolatedJoints(int $divisions)
+{
+	string $objs[] = `ls -sl`;
+	
+	if ((size($objs) < 3) && (size($objs) > 1))
+	{
+		float $position1[] = `xform -q -ws -t $objs[0]`;
+		float $position2[] = `xform -q -ws -t $objs[1]`;
+		
+		float $divideVec[2];
+		$divideVec[0] = ($position2[0] - $position1[0]) / ($divisions - 1);
+		$divideVec[1] = ($position2[1] - $position1[1]) / ($divisions - 1);
+		$divideVec[2] = ($position2[2] - $position1[2]) / ($divisions - 1);
+		
+		select -cl;
+		
+		int $i;
+		for($i = 0; $i < $divisions; $i++)
+		{
+			string $currentJoint = `joint -p 	($position1[0] + ($divideVec[0] * $i))
+																				($position1[1] + ($divideVec[1] * $i))
+																				($position1[2] + ($divideVec[2] * $i))`;
+								
+			if ($i > 0)
+			{
+				string $parentJoint[] = `listRelatives -p -type "joint"`;
+				joint -e -zso -oj xyz -sao yup $parentJoint[0];			
+			}
+			
+			$jointList[$i] = $currentJoint;		
+		}
+	}
+	
+	else
+	{
+		error "Please select two objects";
+	}
+	
+}
